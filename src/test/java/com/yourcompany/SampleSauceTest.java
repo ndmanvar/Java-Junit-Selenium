@@ -2,6 +2,23 @@ package com.yourcompany;
 
 import com.saucelabs.common.SauceOnDemandAuthentication;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -10,7 +27,6 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -18,8 +34,12 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import com.saucelabs.junit.ConcurrentParameterized;
 import com.saucelabs.junit.SauceOnDemandTestWatcher;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -57,7 +77,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
 
     @Rule public TestName name = new TestName() {
         public String getMethodName() {
-        		return String.format("%s : (%s %s %s)", super.getMethodName(), os, browser, version);
+                return String.format("%s : (%s %s %s)", super.getMethodName(), os, browser, version);
         };
     };
 
@@ -179,50 +199,31 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
 
         String message = String.format("SauceOnDemandSessionID=%1$s job-name=%2$s", this.sessionId, methodName);
         System.out.println(message);
+
+    }
+
+    @Test
+    public void verifyTabTitleTest() throws Exception {
+        driver.get("http://www.americanexpress.com/");
+
+        assertEquals("American Express Credit Cards, Rewards, Travel and Business Services", driver.getTitle());
     }
 
     /**
-     * Runs a simple test verifying the UI and title of the belk.com home page.
+     * Go to americanexpress.com, fill out username and password field, and click login
      * @throws Exception
      */
     @Test
-    public void verifyBelkHompage() throws Exception {
-        driver.get("http://www.belk.com");
-        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".primary-nav")));
+    public void loginTest() throws Exception {
+        driver.get("http://www.americanexpress.com/");
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".promo-utility")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".logo")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#shoppingBagPlaceHolder")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#global_search_box")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".container_24")));
+        WebDriverWait wait = new WebDriverWait(driver, 5); // wait for a maximum of 5 seconds
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#Username")));
+        driver.findElement(By.cssSelector("#Username")).sendKeys("sampleUsername");
+        driver.findElement(By.cssSelector("#Password")).sendKeys("samplePassword");
+        driver.findElement(By.cssSelector("#loginLink")).click();
 
-        assertTrue(driver.getTitle().equals("Home - belk.com - Belk.com"));
-    }
-
-    /**
-     * Go to belk.com, click sigin/register in top bar, and verify UI
-     * @throws Exception
-     */
-    @Test
-    public void verifySignInRegisterPage() throws Exception {
-        driver.get("http://www.belk.com");
-        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
-        WebElement signInRegisterLink = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".hide-logged-in a")));
-        signInRegisterLink.click();
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("returningRadio")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input[value='2']")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_password_n")));
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("forgot_Password")));
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("#signInButton")));
-
-        assertTrue(driver.getTitle().equals("Sign In/Register - Belk.com"));
-        assertTrue(driver.getCurrentUrl().equals("https://www.belk.com/AST/Misc/Belk_Stores/Global_Navigation/Sign_In_Register.jsp"));
+        // TO DO : verify login elements are there
     }
 
     /**
@@ -233,6 +234,8 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
     @After
     public void tearDown() throws Exception {
         driver.quit();
+        
+        setRallyIDCustomData(sessionId);
     }
 
     /**
@@ -242,5 +245,28 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
     @Override
     public String getSessionId() {
         return sessionId;
+    }
+
+    public void setRallyIDCustomData(String sessionId) throws ClientProtocolException, IOException, JSONException {
+    	HttpClient httpclient = HttpClientBuilder.create().build();
+
+    	HttpPut httppost = new HttpPut("https://" + authentication.getUsername() + ":" + authentication.getAccessKey() +
+                "@saucelabs.com/rest/v1/ndmanvar/jobs/" + sessionId);
+    	httppost.addHeader("content-type", "application/json");
+    	httppost.addHeader("Accept","application/json");
+
+    	JSONObject json = new JSONObject();
+    	JSONObject customData = new JSONObject();
+
+    	// TO DO: specify correct rallyId
+    	customData.put("rallyId", "sampleRallyId");
+    	json.put("custom-data", customData);
+
+    	StringEntity params = new StringEntity(json.toString());
+    	httppost.setEntity(params);
+
+    	HttpResponse response = httpclient.execute(httppost);
+    	String bodyAsString = EntityUtils.toString(response.getEntity());
+    	System.out.println("Response to put request is : " + bodyAsString);
     }
 }
