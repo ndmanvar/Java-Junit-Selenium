@@ -10,7 +10,6 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -38,7 +37,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * @author Neil Manvar
  */
 @RunWith(ConcurrentParameterized.class)
-public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
+public class SampleSauceTest implements  {
 
     public String username = System.getenv("SAUCE_USER_NAME") != null ? System.getenv("SAUCE_USER_NAME") : System.getenv("SAUCE_USERNAME");
     public String accesskey = System.getenv("SAUCE_API_KEY") != null ? System.getenv("SAUCE_API_KEY") : System.getenv("SAUCE_ACCESS_KEY");
@@ -57,7 +56,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
 
     @Rule public TestName name = new TestName() {
         public String getMethodName() {
-        		return String.format("%s : (%s %s %s)", super.getMethodName(), os, browser, version);
+                return String.format("%s : (%s %s %s)", super.getMethodName(), os, browser, version);
         };
     };
 
@@ -123,28 +122,28 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
         browsers.add(new String[]{"Windows 7", "41", "chrome", null, null});
 
         // windows xp, IE 8
-        browsers.add(new String[]{"Windows XP", "8", "internet explorer", null, null});
+       browsers.add(new String[]{"Windows XP", "8", "internet explorer", null, null});
 
-        // windows 7, IE 9
-        browsers.add(new String[]{"Windows 7", "9", "internet explorer", null, null});
+       // windows 7, IE 9
+       browsers.add(new String[]{"Windows 7", "9", "internet explorer", null, null});
 
-        // windows 8, IE 10
-        browsers.add(new String[]{"Windows 8", "10", "internet explorer", null, null});
+       // windows 8, IE 10
+       browsers.add(new String[]{"Windows 8", "10", "internet explorer", null, null});
 
-        // windows 8.1, IE 11
-        browsers.add(new String[]{"Windows 8.1", "11", "internet explorer", null, null});
+       // windows 8.1, IE 11
+       browsers.add(new String[]{"Windows 8.1", "11", "internet explorer", null, null});
 
-        // OS X 10.8, Safari 6
-        browsers.add(new String[]{"OSX 10.8", "6", "safari", null, null});
+       // OS X 10.8, Safari 6
+       browsers.add(new String[]{"OSX 10.8", "6", "safari", null, null});
 
-        // OS X 10.9, Safari 7
-        browsers.add(new String[]{"OSX 10.9", "7", "safari", null, null});
+       // OS X 10.9, Safari 7
+       browsers.add(new String[]{"OSX 10.9", "7", "safari", null, null});
 
-        // OS X 10.10, Safari 7
-        browsers.add(new String[]{"OSX 10.10", "8", "safari", null, null});
+       // OS X 10.10, Safari 7
+       browsers.add(new String[]{"OSX 10.10", "8", "safari", null, null});
 
-        // Linux, Firefox 37
-        browsers.add(new String[]{"Linux", "37", "firefox", null, null});
+       // Linux, Firefox 37
+       browsers.add(new String[]{"Linux", "37", "firefox", null, null});
 
         return browsers;
     }
@@ -179,50 +178,31 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
 
         String message = String.format("SauceOnDemandSessionID=%1$s job-name=%2$s", this.sessionId, methodName);
         System.out.println(message);
+
+    }
+
+    @Test
+    public void verifyTabTitleTest() throws Exception {
+        driver.get("http://www.americanexpress.com/");
+
+        assertEquals("American Express Credit Cards, Rewards, Travel and Business Services", driver.getTitle());
     }
 
     /**
-     * Runs a simple test verifying the UI and title of the belk.com home page.
+     * Go to americanexpress.com, fill out username and password field, and click login
      * @throws Exception
      */
     @Test
-    public void verifyBelkHompage() throws Exception {
-        driver.get("http://www.belk.com");
-        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".primary-nav")));
+    public void loginTest() throws Exception {
+        driver.get("http://www.americanexpress.com/");
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".promo-utility")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".logo")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#shoppingBagPlaceHolder")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#global_search_box")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".container_24")));
+        WebDriverWait wait = new WebDriverWait(driver, 5); // wait for a maximum of 5 seconds
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#Username")));
+        driver.findElement(By.cssSelector("#Username")).sendKeys("sampleUsername");
+        driver.findElement(By.cssSelector("#Password")).sendKeys("samplePassword");
+        driver.findElement(By.cssSelector("#loginLink")).click();
 
-        assertTrue(driver.getTitle().equals("Home - belk.com - Belk.com"));
-    }
-
-    /**
-     * Go to belk.com, click sigin/register in top bar, and verify UI
-     * @throws Exception
-     */
-    @Test
-    public void verifySignInRegisterPage() throws Exception {
-        driver.get("http://www.belk.com");
-        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
-        WebElement signInRegisterLink = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".hide-logged-in a")));
-        signInRegisterLink.click();
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("returningRadio")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input[value='2']")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_password_n")));
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("forgot_Password")));
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("#signInButton")));
-
-        assertTrue(driver.getTitle().equals("Sign In/Register - Belk.com"));
-        assertTrue(driver.getCurrentUrl().equals("https://www.belk.com/AST/Misc/Belk_Stores/Global_Navigation/Sign_In_Register.jsp"));
+        // TO DO : verify login elements are there
     }
 
     /**
@@ -233,6 +213,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
     @After
     public void tearDown() throws Exception {
         driver.quit();
+
     }
 
     /**
