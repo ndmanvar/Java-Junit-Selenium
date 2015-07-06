@@ -42,8 +42,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 @RunWith(ConcurrentParameterized.class)
 public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
 
-    public String username = System.getenv("SAUCE_USER_NAME") != null ? System.getenv("SAUCE_USER_NAME") : System.getenv("SAUCE_USERNAME");
-    public String accesskey = System.getenv("SAUCE_API_KEY") != null ? System.getenv("SAUCE_API_KEY") : System.getenv("SAUCE_ACCESS_KEY");
+	public String username = System.getenv("SAUCE_USER_NAME") != null ? System.getenv("SAUCE_USER_NAME") : System.getenv("SAUCE_USERNAME");
+	public String accesskey = System.getenv("SAUCE_API_KEY") != null ? System.getenv("SAUCE_API_KEY") : System.getenv("SAUCE_ACCESS_KEY");
 
     /**
      * Constructs a {@link SauceOnDemandAuthentication} instance using the supplied user name/access key.  To use the authentication
@@ -87,7 +87,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
     /**
      * The {@link WebDriver} instance which is used to perform browser interactions with.
      */
-    private WebDriver wd;
+    private WebDriver driver;
 
     /**
      * Constructs a new instance of the test.  The constructor requires three string parameters, which represent the operating
@@ -118,16 +118,31 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
         LinkedList browsers = new LinkedList();
 
         // windows 7, Chrome 41
-        browsers.add(new String[]{"OS X 10.10", "41", "chrome", null, null});
+        browsers.add(new String[]{"Windows 7", "41", "chrome", null, null});
 
-        // Windows 8.1, IE 11
-         browsers.add(new String[]{"Windows 8.1", "11", "internet explorer", null, null});
+        // windows xp, IE 8
+        browsers.add(new String[]{"Windows XP", "8", "internet explorer", null, null});
 
-         // Windows XP, IE 8
-         browsers.add(new String[]{"Windows 7", "10", "internet explorer", null, null});
+        // windows 7, IE 9
+        browsers.add(new String[]{"Windows 7", "9", "internet explorer", null, null});
 
-         // Linux, Firefox 37
-         browsers.add(new String[]{"Linux", "37", "firefox", null, null});
+        // windows 8, IE 10
+        browsers.add(new String[]{"Windows 8", "10", "internet explorer", null, null});
+
+        // windows 8.1, IE 11
+        browsers.add(new String[]{"Windows 8.1", "11", "internet explorer", null, null});
+
+        // OS X 10.8, Safari 6
+        browsers.add(new String[]{"OSX 10.8", "6", "safari", null, null});
+
+        // OS X 10.9, Safari 7
+        browsers.add(new String[]{"OSX 10.9", "7", "safari", null, null});
+
+        // OS X 10.10, Safari 7
+        browsers.add(new String[]{"OSX 10.10", "8", "safari", null, null});
+
+        // Linux, Firefox 37
+        browsers.add(new String[]{"Linux", "37", "firefox", null, null});
 
         return browsers;
     }
@@ -142,7 +157,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
      */
     @Before
     public void setUp() throws Exception {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
+    	DesiredCapabilities capabilities = new DesiredCapabilities();
 
         if (browser != null) capabilities.setCapability(CapabilityType.BROWSER_NAME, browser);
         if (version != null) capabilities.setCapability(CapabilityType.VERSION, version);
@@ -152,11 +167,13 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
         capabilities.setCapability(CapabilityType.PLATFORM, os);
         capabilities.setCapability("name", name.getMethodName());
 
-        this.wd = new RemoteWebDriver(
+        this.driver = new RemoteWebDriver(
                 new URL("http://" + authentication.getUsername() + ":" + authentication.getAccessKey() +
-                        "@ondemand.saucelabs.com:80/wd/hub"),
+                		"@ondemand.saucelabs.com:80/wd/hub"),
                 capabilities);
-        this.sessionId = (((RemoteWebDriver) wd).getSessionId()).toString();
+        this.sessionId = (((RemoteWebDriver) driver).getSessionId()).toString();
+
+        this.driver.get("http://www.belk.com/");
     }
 
     /**
@@ -164,42 +181,116 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
      * @throws Exception
      */
     @Test
-    public void searchForSFHotel() {
-    	wd.get("http://www.priceline.com/");
+    public void verifyBelkHompage() throws Exception {
+    	WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".primary-nav")));
 
-        WebDriverWait wait = new WebDriverWait(wd, 20);
-        WebElement element;
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".promo-utility")));
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".logo")));
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#shoppingBagPlaceHolder")));
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#global_search_box")));
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".container_24")));
+    	wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".container_24 .hero")));
 
-        element = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("hotel-dest")));
-        element.click();
-        element.clear();
-        element.sendKeys("San Francisco, CA");
-
-        element = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("img.ui-datepicker-trigger")));
-        element.click();
-
-        wd.findElement(By.xpath("//a[@class='ui-state-default'][text()=17]")).click();
-        wd.findElement(By.xpath("//a[@class='ui-state-default'][text()=24]")).click();
-
-        wd.findElement(By.id("hotel-btn-submit-retl")).click();
-
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.linkText("Holiday Inn Express San Francisco Airport South")));
+        assertTrue(driver.getTitle().equals("Home - belk.com - Belk.com"));
     }
 
+    /**
+     * Go to belk.com, click women in navigation menu, and verify UI
+     * @throws Exception
+     */
     @Test
-    public void SFONorthTest() {
-        wd.get("http://www.priceline.com/");
-        wd.findElement(By.xpath("//div[@class='xdeals-container']//a[.='Search Express Deals®']")).click();
-        wd.findElement(By.id("sopq-hotel-checkout")).click();
-        wd.findElement(By.linkText("17")).click();
-        wd.findElement(By.id("sopq-hotel-dest")).click();
-        wd.findElement(By.id("sopq-hotel-dest")).clear();
-        wd.findElement(By.id("sopq-hotel-dest")).sendKeys("San Francisco, CA");
-        wd.findElement(By.id("hotel-btn-submit-sopq")).click();
+    public void verifyWomenTab() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
+        WebElement womenTab = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#Women a")));
+        womenTab.click();
 
-        WebDriverWait wait = new WebDriverWait(wd, 20);
+        By selector = By.cssSelector(".collapsibleNav .firstSubnavHeading");
+        WebElement firstSection = wait.until(ExpectedConditions.presenceOfElementLocated(selector));
 
-        wait.until(ExpectedConditions.textToBePresentInElement(wd.findElement(By.tagName("html")), "SFO North - San Bruno Area Hotel"));
+        String text = firstSection.getText();
+
+        assertTrue(text.contains("Shorts & Capris") && text.contains("Skirts"));
+
+        // Special sizes
+        selector = By.cssSelector(".collapsibleNav .firstSubnavHeading + li");
+        WebElement specialSizesSection = wait.until(ExpectedConditions.presenceOfElementLocated(selector));
+
+        assertTrue(specialSizesSection.getText().contains("Women's Plus"));
+
+        // we should see the vertical image
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#vertical-hero")));
+
+        // TO DO: verify other elements
+
+        // make sure url and title has changed
+        assertTrue(driver.getTitle().equals("Women - Belk.com"));
+        assertTrue(driver.getCurrentUrl().equals("http://www.belk.com/AST/Main/Belk_Primary/Women.jsp"));
+
+        // verify women tab is selected
+        assertTrue(driver.findElement(By.cssSelector(".current")).getText().contains("Women"));
+    }
+
+    /**
+     * Go to belk.com, click Beauty & Fragrance in navigation menu, and verify UI
+     * @throws Exception
+     */
+    @Test
+    public void verifyBeautyAndFragrance() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
+        WebElement beautyFragranceTab = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#Beauty_And_Fragrance a")));
+        beautyFragranceTab.click();
+
+        By selector = By.cssSelector(".collapsibleNav .firstSubnavHeading");
+        WebElement firstSection = wait.until(ExpectedConditions.presenceOfElementLocated(selector));
+
+        String text = firstSection.getText();
+
+        assertTrue(text.contains("Bath & Body") && text.contains("Fragrance") && text.contains("Makeup"));
+
+        // Features
+        selector = By.cssSelector(".collapsibleNav .firstSubnavHeading + li");
+        WebElement specialSizesSection = wait.until(ExpectedConditions.presenceOfElementLocated(selector));
+
+        text = specialSizesSection.getText();
+        assertTrue(text.contains("What's New") && text.contains("Allure Best of Beauty"));
+
+        // we should see the vertical image
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#horizontal-hero")));
+
+        // TO DO: verify other elements
+
+        // make sure url and title has changed
+        assertTrue(driver.getTitle().equals("Beauty And Fragrance - Belk.com"));
+        assertTrue(driver.getCurrentUrl().equals("http://www.belk.com/AST/Main/Belk_Primary/Beauty_And_Fragrance.jsp"));
+
+        // verify women tab is selected
+        text = driver.findElement(By.cssSelector(".current")).getText();
+        assertTrue(text.contains("Beauty &") && text.contains("Fragrance"));
+    }
+
+    /**
+     * Go to belk.com, click sigin/register in top bar, and verify UI
+     * @throws Exception
+     */
+    @Test
+    public void verifySignInRegisterPage() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, 10); // wait for a maximum of 5 seconds
+        WebElement signInRegisterLink = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".hide-logged-in a")));
+        signInRegisterLink.click();
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("returningRadio")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input[value='2']")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_email_address_n")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("txt_password_n")));
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("forgot_Password")));
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("#signInButton")));
+
+        assertTrue(driver.getTitle().equals("Sign In/Register - Belk.com"));
+        assertTrue(driver.getCurrentUrl().equals("https://www.belk.com/AST/Misc/Belk_Stores/Global_Navigation/Sign_In_Register.jsp"));
     }
 
     /**
@@ -209,7 +300,7 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
      */
     @After
     public void tearDown() throws Exception {
-        wd.quit();
+        driver.quit();
     }
 
     /**
