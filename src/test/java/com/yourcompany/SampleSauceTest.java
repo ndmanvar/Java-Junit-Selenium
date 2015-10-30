@@ -2,6 +2,9 @@ package com.yourcompany;
 
 import com.saucelabs.common.SauceOnDemandAuthentication;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,37 +117,18 @@ public class SampleSauceTest implements SauceOnDemandSessionIdProvider {
     /**
      * @return a LinkedList containing String arrays representing the browser combinations the test should be run against. The values
      * in the String array are used as part of the invocation of the test constructor
+     * @throws JSONException 
      */
     @ConcurrentParameterized.Parameters
-    public static LinkedList browsersStrings() {
+    public static LinkedList browsersStrings() throws JSONException {
         LinkedList browsers = new LinkedList();
-
-        // windows 7, Chrome 41
-        browsers.add(new String[]{"Windows 7", "41", "chrome", null, null});
-
-        // windows xp, IE 8
-        browsers.add(new String[]{"Windows XP", "8", "internet explorer", null, null});
-
-        // windows 7, IE 9
-        browsers.add(new String[]{"Windows 7", "9", "internet explorer", null, null});
-
-        // windows 8, IE 10
-        browsers.add(new String[]{"Windows 8", "10", "internet explorer", null, null});
-
-        // windows 8.1, IE 11
-        browsers.add(new String[]{"Windows 8.1", "11", "internet explorer", null, null});
-
-        // OS X 10.8, Safari 6
-        browsers.add(new String[]{"OSX 10.8", "6", "safari", null, null});
-
-        // OS X 10.9, Safari 7
-        browsers.add(new String[]{"OSX 10.9", "7", "safari", null, null});
-
-        // OS X 10.10, Safari 7
-        browsers.add(new String[]{"OSX 10.10", "8", "safari", null, null});
-
-        // Linux, Firefox 37
-        browsers.add(new String[]{"Linux", "37", "firefox", null, null});
+        String browsersJSONArrayString = System.getenv("SAUCE_ONDEMAND_BROWSERS");
+        JSONArray browsersJSONArrayObj = new JSONArray(browsersJSONArrayString);
+        
+        for (int i=0; i<browsersJSONArrayObj.length(); i++) {
+            JSONObject browserObj = (JSONObject)browsersJSONArrayObj.getJSONObject(i);
+            browsers.add(new String[]{browserObj.getString("os"), browserObj.getString("browser-version"), browserObj.getString("browser"), null, null});
+        }
 
         return browsers;
     }
