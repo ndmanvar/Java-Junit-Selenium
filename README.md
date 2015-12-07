@@ -31,7 +31,7 @@ $ brew install ant
     * In the terminal export your Sauce Labs Credentials as environmental variables: <br>
 ```$ export SAUCE_USERNAME=<your Sauce Labs username>``` <br>
 ```$ export SAUCE_ACCESS_KEY=<your Sauce Labs access key>```
-    ####Optional:
+    * Optional: Set your build name to have it listed under the automated builds on [Sauce Labs Dashboard](https://saucelabs.com/beta/dashboard/). <br>
 ```$ export BUILD_TAG=<your build tag>```    
 3. Project Dependencies
 	* Check that Packages are available by compiling your test code.
@@ -39,15 +39,16 @@ $ brew install ant
 	$ cd Java-Junit-Selenium
 	$ mvn test-compile
 	```
+	
 ### Running Tests
 Tests in Parallel:<br>
 ```
 $ mvn test
 ```
-####Optional:
-```
-$ ant test
-```
+	Optional: 
+	```
+	$ ant test
+	```
 
 [Sauce Labs Dashboard](https://saucelabs.com/beta/dashboard/)
 
