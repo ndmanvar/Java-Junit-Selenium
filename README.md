@@ -9,20 +9,15 @@
 ### Environment Setup
 
 1. Global Dependencies
-* Install Maven
-    https://maven.apache.org/install.html
-* Or Install Maven with Homebrew
-    http://brew.sh/ <br>
+	* Install [Maven](https://maven.apache.org/install.html)
+	* Or Install Maven with [Homebrew](http://brew.sh/)<br>
 ```
 $ brew install maven
 ```
     
-####Optional:
-
-* Install Maven
-        https://ant.apache.org/manual/install.html
-* Or Install Ant with Homebrew
-        http://brew.sh/ <br>
+#####ant Build Option:
+* Install [Ant](https://ant.apache.org/manual/install.html)
+* Or Install Ant with [Homebrew](http://brew.sh/)<br>
 ```
 $ brew install ant
 ```
@@ -41,19 +36,19 @@ $ brew install ant
 	```
 	
 ### Running Tests
-Tests in Parallel:<br>
+#####Tests in Parallel:<br>
 ```
 $ mvn test
 ```
-	Optional: 
-	```
-	$ ant test
-	```
+#####ant Build Option:
+```
+$ ant test
+```
 
 [Sauce Labs Dashboard](https://saucelabs.com/beta/dashboard/)
 
 ### Advice/Troubleshooting
-1. It may be useful to use a Java IDE such as IntelliJ or Eclipse to help troubleshoot potential issues. 
+* It may be useful to use a Java IDE such as IntelliJ or Eclipse to help troubleshoot potential issues. 
 
 ### Resources
 * [Sauce Labs Documentation](https://wiki.saucelabs.com/)
